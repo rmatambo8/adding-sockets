@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  // socket.join('bin_id') would be the approach that would use rooms;
+  socket.on('newRequest', ({dirName, request}) => {
+    if (document.querySelector('h4').innerText !== dirName) return;
+    const list = document.querySelector('ul');
+    list.appendChild(makeLi(request));
+    
+  })
+  function makeLi(request) {
+      let li = document.createElement('li');
+      let content = JSON.stringify(request);
+      li.innerText = content;
+      return li
+  }
+  socket.on('requests', ({dirName, requests}) => {
+    if (document.querySelector('h4').innerText !== dirName) return;
+    const list = document.querySelector('ul');
+    list.innerHTML = "";
+    
+
+
+    requests.forEach(request => {
+      list.appendChild(makeLi(request));
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', e => {
+    e.preventDefault();
+    document.querySelector('form').addEventListener('submit', event => {
+      event.preventDefault();
+      const h4 = document.querySelector('h4')
+      h4.innerText = document.querySelector('#dirName').value
+      socket.emit('find_dir', {dirName: document.querySelector('#dirName').value})
+    });
+  });
+</script>
+<body>
+  <h1>this acts as a test and you can see what requests have been sent to three directories: apple, pear, banana</h1>
+  <h4 id="dir"></h4>
+  <ul>
+  </ul>
+  <form>
+    <label for="dirName"></label>
+    <input id='dirName'/>
+    <button type="submit">Find Dir</button>
+  </form>
+</body>
+</html>
